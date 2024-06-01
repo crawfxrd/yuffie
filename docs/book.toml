@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: NONE
+
+[book]
+title = "Yuffie"
+description = "Yuffie development documentation"
+language = "en"
+src = "."
+
+[build]
+build-dir = "../target/book"
+create-missing = false
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "coal"
+no-section-label = true
+git-repository-url = "https://github.com/crawfxrd/yuffie/"
+
+[output.html.print]
+enable = false

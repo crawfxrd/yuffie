@@ -1,0 +1,20 @@
+[package]
+name = "yuffie-proc-macros"
+version = "0.0.1"
+description = "Procedural macros for Yuffie"
+
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+publish.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[lib]
+proc-macro = true
+doctest = false
+
+[dependencies]
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }

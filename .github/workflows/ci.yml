@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: NONE
+
+name: CI
+
+on:
+  push:
+    branches-ignore:
+    - 'dev/*'
+  pull_request:
+    branches:
+    - 'main'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        ./scripts/install-deps.sh
+        ./scripts/install-rust.sh
+    - run: cargo fetch --locked
+    - run: just clippy -- -D warnings
+
+  doc:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        ./scripts/install-deps.sh
+        ./scripts/install-rust.sh
+    - run: cargo fetch --locked
+    - run: just doc --release
+
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        ./scripts/install-deps.sh
+        ./scripts/install-rust.sh
+    - run: just fmt --check
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        ./scripts/install-deps.sh
+        ./scripts/install-rust.sh
+    - run: cargo fetch --locked
+    - run: just test

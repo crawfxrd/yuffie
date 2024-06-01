@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: NONE
+
+# https://rust-lang.github.io/rustfmt/
+
+# stable options
+newline_style = "Unix"
+use_field_init_shorthand = true
+use_small_heuristics = "Off"
+use_try_shorthand = true
+
+# unstable options
+condense_wildcard_suffixes = true
+empty_item_single_line = false
+error_on_line_overflow = true
+error_on_unformatted = true
+format_code_in_doc_comments = true
+format_macro_matchers = true
+group_imports = "StdExternalCrate"
+imports_granularity = "Item"
+imports_layout = "HorizontalVertical"
+normalize_doc_attributes = true
+overflow_delimited_expr = true
+reorder_impl_items = false # To sort associated consts by value
+wrap_comments = true
