@@ -1,24 +1,63 @@
 // SPDX-License-Identifier: BSD-2-Clause-Patent
 // SPDX-FileCopyrightText: 2024 System76, Inc.
 
-//! Internal Forms Representation
+//! # Forms Package
 //!
 //! ## References
 //!
-//! - UEFI Specification, version 2.10: 33.3.8 Forms Package
+//! - UEFI Specification, Version 2.10
+//!   - 33.2.10: Forms Browser
+//!   - 33.3.8: Forms Package
 
 use core::ops;
 
+use super::*;
 use crate::guid;
 
-pub type QuestionId = u16;
-pub type ImageId = u16;
-pub type StringId = u16;
-pub type FormId = u16;
-pub type VarStoreId = u16;
-pub type AnimationId = u16;
-pub type DefaultId = u16;
+/// `EFI_HII_TIME`
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct HiiTime {
+    pub Hour: u8,
+    pub Minute: u8,
+    pub Seconds: u8,
+}
 
+/// `EFI_HII_DATE`
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct HiiDate {
+    pub Year: u16,
+    pub Month: u8,
+    pub Day: u8,
+}
+
+/// `EFI_HII_REF`
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct HiiRef {
+    pub QuestionId: QuestionId,
+    pub FormId: FormId,
+    pub FormsetGuid: guid::Guid,
+    pub DevicePath: StringId,
+}
+
+/// `EFI_IFR_TYPE_VALUE`
+#[repr(C, packed)]
+pub union IfrTypeValue<const N: usize = 0> {
+    pub U8: u8,
+    pub U16: u16,
+    pub U32: u32,
+    pub U64: u64,
+    pub B: bool,
+    pub Time: HiiTime,
+    pub Date: HiiDate,
+    pub String: StringId,
+    pub Ref: HiiRef,
+    pub Buffer: [u8; N],
+}
+
+/// IFR opcode encodings
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct OpCode(u8);
@@ -132,6 +171,7 @@ impl From<u8> for OpCode {
     }
 }
 
+/// `EFI_IFR_OP_HEADER`
 #[derive(Debug)]
 #[repr(C)]
 pub struct OpHeader {
@@ -152,15 +192,18 @@ impl OpHeader {
     }
 }
 
-#[derive(Debug)]
-#[repr(C)]
+/// `EFI_IFR_STATEMENT_HEADER`
+#[derive(Debug, Eq, PartialEq)]
+#[repr(C, packed)]
 pub struct StatementHeader {
     pub Prompt: StringId,
     pub Help: StringId,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct QuestionFlags(u8);
+
 impl QuestionFlags {
     pub const READ_ONLY: Self = Self(1 << 0);
     pub const CALLBACK: Self = Self(1 << 2);
@@ -184,12 +227,13 @@ impl From<u8> for QuestionFlags {
     }
 }
 
-#[repr(C)]
+#[repr(C, packed)]
 pub union VarStoreInfo {
-    VarName: StringId,
-    VarOffset: u16,
+    pub VarName: StringId,
+    pub VarOffset: u16,
 }
 
+/// `EFI_IFR_QUESTION_HEADER`
 #[repr(C, packed)]
 pub struct QuestionHeader {
     pub Header: StatementHeader,
@@ -199,393 +243,507 @@ pub struct QuestionHeader {
     pub Flags: QuestionFlags,
 }
 
+/// `EFI_IFR_ACTION`
 #[repr(C, packed)]
-pub struct Action {
+pub struct IfrAction {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub QuestionConfig: StringId,
 }
 
+/// `EFI_IFR_ACTION1`
 #[repr(C, packed)]
-pub struct Action1 {
+pub struct IfrAction1 {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
 }
 
-#[repr(C)]
-pub struct Animation {
+/// `EFI_IFR_ANIMATION`
+#[repr(C, packed)]
+pub struct IfrAnimation {
     pub Header: OpHeader,
     pub Id: AnimationId,
 }
 
-#[repr(C)]
-pub struct Add {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct And {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct BitwiseAnd {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct BitwiseNot {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct BitwiseOr {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct Catenate {
-    pub Header: OpHeader,
-}
-
+/// `EFI_IFR_ADD`
 #[repr(C, packed)]
-pub struct Checkbox {
+pub struct IfrAdd {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_AND`
+#[repr(C, packed)]
+pub struct IfrAnd {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_BITWISE_AND`
+#[repr(C, packed)]
+pub struct IfrBitwiseAnd {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_BITWISE_NOT`
+#[repr(C, packed)]
+pub struct IfrBitwiseNot {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_BITWISE_OR`
+#[repr(C, packed)]
+pub struct IfrBitwiseOr {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_CATENATE`
+#[repr(C, packed)]
+pub struct IfrCatenate {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_CHECKBOX`
+#[repr(C, packed)]
+pub struct IfrCheckbox {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub Flags: u8,
 }
 
-#[repr(C)]
-pub struct Conditional {
+/// `EFI_IFR_CONDITIONAL`
+#[repr(C, packed)]
+pub struct IfrConditional {
     pub Header: OpHeader,
 }
 
+/// `EFI_IFR_DATE`
 #[repr(C, packed)]
-pub struct Date {
+pub struct IfrDate {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub Flags: u8,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct Default {
-//    pub Header: OpHeader,
-//    pub DefaultId: u16,
-//    pub Type: u8,
-//    pub Value: TypeValue,
-//}
+/// `EFI_IFR_DEFAULT`
+#[repr(C, packed)]
+pub struct IfrDefault {
+    pub Header: OpHeader,
+    pub DefaultId: u16,
+    pub Type: u8,
+    pub Value: IfrTypeValue,
+}
 
-#[repr(C)]
-pub struct DefaultStore {
+/// `EFI_IFR_DEFAULT2`
+#[repr(C, packed)]
+pub struct IfrDefault2 {
+    pub Header: OpHeader,
+    pub DefaultId: u16,
+    pub Type: u8,
+}
+
+/// `EFI_IFR_DEFAULTSTORE`
+#[repr(C, packed)]
+pub struct IfrDefaultStore {
     pub Header: OpHeader,
     pub DefaultName: StringId,
     pub DefaultId: u16,
 }
 
-#[repr(C)]
-pub struct DisableIf {
+/// `EFI_IFR_DISABLE_IF`
+#[repr(C, packed)]
+pub struct IfrDisableIf {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Divide {
+/// `EFI_IFR_DIVIDE`
+#[repr(C, packed)]
+pub struct IfrDivide {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Dup {
+/// `EFI_IFR_DUP`
+#[repr(C, packed)]
+pub struct IfrDup {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct End {
+/// `EFI_IFR_END`
+#[repr(C, packed)]
+pub struct IfrEnd {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Equal {
+/// `EFI_IFR_EQUAL`
+#[repr(C, packed)]
+pub struct IfrEqual {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct EqIdId {
+/// `EFI_IFR_EQ_ID_ID`
+#[repr(C, packed)]
+pub struct IfrEqIdId {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct EqIdVal {
+/// `EFI_IFR_EQ_ID_VAL_LIST`
+#[repr(C, packed)]
+pub struct IfrEqIdValList<const N: usize = 0> {
+    pub Header: OpHeader,
+    pub QuestionId: QuestionId,
+    pub ListLength: u16,
+    pub ValueList: [u16; N],
+}
+
+/// `EFI_IFR_EQ_ID_VAL`
+#[repr(C, packed)]
+pub struct IfrEqIdVal {
     pub Header: OpHeader,
     pub QuestionId: QuestionId,
     pub Value: u16,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct EqIdValList {
-//    pub Header: OpHeader,
-//    pub QuestionId: QuestionId,
-//    pub ListLength: u16,
-//    pub ValueList: [u16; 1],
-//}
-
-#[repr(C)]
-pub struct False {
+/// `EFI_IFR_FALSE`
+#[repr(C, packed)]
+pub struct IfrFalse {
     pub Header: OpHeader,
 }
 
+/// `EFI_IFR_FIND`
 #[repr(C, packed)]
-pub struct Find {
+pub struct IfrFind {
     pub Header: OpHeader,
     pub Format: u8,
 }
 
-#[repr(C)]
-pub struct Form {
+/// `EFI_IFR_FORM`
+#[repr(C, packed)]
+pub struct IfrForm {
     pub Header: OpHeader,
     pub FormId: FormId,
     pub FormTitle: StringId,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct FormMap {
-//    pub Header: OpHeader,
-//    pub FormId: FormId,
-//}
-
-// TODO
-//#[repr(C)]
-//pub struct FormSet {
-//    pub Header: OpHeader,
-//    pub Guid: guid::Guid,
-//    pub FormSetTitle: StringId,
-//    pub Help: StringId,
-//    pub Flags: u8,
-//}
-
+/// `EFI_IFR_FORM_MAP_METHOD`
 #[repr(C, packed)]
-pub struct Get {
+pub struct IfrFormMapMethod {
+    pub MethodTitle: StringId,
+    pub MethodIdentifier: guid::Guid,
+}
+
+/// `EFI_IFR_FORM_MAP`
+#[repr(C, packed)]
+pub struct IfrFormMap<const N: usize = 0> {
+    pub Header: OpHeader,
+    pub FormId: FormId,
+    pub Methods: [IfrFormMapMethod; N],
+}
+
+/// `EFI_IFR_FORM_SET`
+#[repr(C, packed)]
+pub struct IfrFormSet<const N: usize = 0> {
+    pub Header: OpHeader,
+    pub Guid: guid::Guid,
+    pub FormSetTitle: StringId,
+    pub Help: StringId,
+    pub Flags: u8,
+    pub ClassGuid: [guid::Guid; N],
+}
+
+/// `EFI_IFR_GET`
+#[repr(C, packed)]
+pub struct IfrGet {
     pub Header: OpHeader,
     pub VarStoreId: VarStoreId,
     pub VarStoreInfo: VarStoreInfo,
     pub VarStoreType: u8,
 }
 
-#[repr(C)]
-pub struct GrayOutIf {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct GreaterEqual {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct GreaterThan {
-    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER*`.
-    pub Header: OpHeader,
-}
-
+/// `EFI_IFR_GRAY_OUT_IF`
 #[repr(C, packed)]
-pub struct Guid {
+pub struct IfrGrayOutIf {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_GREATER_EQUAL`
+#[repr(C, packed)]
+pub struct IfrGreaterEqual {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_GREATER_THAN`
+#[repr(C, packed)]
+pub struct IfrGreaterThan {
+    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER *`.
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_GUID`
+#[repr(C, packed)]
+pub struct IfrGuid {
     pub Header: OpHeader,
     pub Guid: guid::Guid,
 }
 
-#[repr(C)]
-pub struct Image {
+/// `EFI_IFR_IMAGE`
+#[repr(C, packed)]
+pub struct IfrImage {
     // NOTE: UEFI 2.10 incorrectly missing `Header`.
     pub Header: OpHeader,
     pub Id: ImageId,
 }
 
-#[repr(C)]
-pub struct InconsistentIf {
+/// `EFI_IFR_INCONSISTENT_IF`
+#[repr(C, packed)]
+pub struct IfrInconsistentIf {
     pub Header: OpHeader,
     pub Error: StringId,
 }
 
-#[repr(C)]
-pub struct Length {
+/// `EFI_IFR_LENGTH`
+#[repr(C, packed)]
+pub struct IfrLength {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct LessEqual {
+/// `EFI_IFR_LESS_EQUAL`
+#[repr(C, packed)]
+pub struct IfrLessEqual {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct LessThan {
+/// `EFI_IFR_LESS_THAN`
+#[repr(C, packed)]
+pub struct IfrLessThan {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Locked {
+/// `EFI_IFR_LOCKED`
+#[repr(C, packed)]
+pub struct IfrLocked {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Map {
+/// `EFI_IFR_MAP`
+#[repr(C, packed)]
+pub struct IfrMap {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Match {
+/// `EFI_IFR_MAP`
+#[repr(C, packed)]
+pub struct IfrMatch {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Mid {
+/// `EFI_IFR_MID`
+#[repr(C, packed)]
+pub struct IfrMid {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Modal {
-    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER*`.
+/// `EFI_IFR_MODAL_TAG`
+#[repr(C, packed)]
+pub struct IfrModalTag {
+    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER *`.
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Modulo {
-    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER*`.
+/// `EFI_IFR_MODULE`
+#[repr(C, packed)]
+pub struct IfrModulo {
+    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_OP_HEADER *`.
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Multiply {
+/// `EFI_IFR_MULTIPLY`
+#[repr(C, packed)]
+pub struct IfrMultiply {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Not {
+/// `EFI_IFR_NOT`
+#[repr(C, packed)]
+pub struct IfrNot {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct NotEqual {
+/// `EFI_IFR_NOT_EQUAL`
+#[repr(C, packed)]
+pub struct IfrNotEqual {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct NoSubmitIf {
+/// `EFI_IFR_NO_SUBMIT_IF`
+#[repr(C, packed)]
+pub struct IfrNoSubmitIf {
     pub Header: OpHeader,
     pub Error: StringId,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct Numeric {
-//    pub Header: OpHeader,
-//    pub Question: QuestionHeader,
-//    pub Flags: u8,
-//    pub Data: ,
-//}
-
-#[repr(C)]
-pub struct One {
-    pub Header: OpHeader,
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct IfrU8Data {
+    pub MinValue: u8,
+    pub MaxValue: u8,
+    pub Step: u8,
 }
 
-#[repr(C)]
-pub struct Ones {
-    pub Header: OpHeader,
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct IfrU16Data {
+    pub MinValue: u16,
+    pub MaxValue: u16,
+    pub Step: u16,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct OneOf {
-//    pub Header: OpHeader,
-//    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_QUESTION_HEADER*`.
-//    pub Question: QuestionHeader,
-//    pub Flags: u8,
-//    pub Data: ,
-//}
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct IfrU32Data {
+    pub MinValue: u32,
+    pub MaxValue: u32,
+    pub Step: u32,
+}
 
-// TODO
-//#[repr(C)]
-//pub struct OneOfOption {
-//    pub Header: OpHeader,
-//    pub Option: StringId,
-//    pub Flags: u8,
-//    pub Type: u8,
-//    pub Value: TypeValue,
-//}
-
-#[repr(C)]
-pub struct Or {
-    pub Header: OpHeader,
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(C, packed)]
+pub struct IfrU64Data {
+    pub MinValue: u64,
+    pub MaxValue: u64,
+    pub Step: u64,
 }
 
 #[repr(C, packed)]
-pub struct OrderedList {
+pub union IfrData {
+    pub U8: IfrU8Data,
+    pub U16: IfrU16Data,
+    pub U32: IfrU32Data,
+    pub U64: IfrU64Data,
+}
+
+/// `EFI_IFR_NUMERIC`
+#[repr(C, packed)]
+pub struct IfrNumeric {
+    pub Header: OpHeader,
+    pub Question: QuestionHeader,
+    pub Flags: u8,
+    pub Data: IfrData,
+}
+
+/// `EFI_IFR_ONE`
+#[repr(C, packed)]
+pub struct IfrOne {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_ONES`
+#[repr(C, packed)]
+pub struct IfrOnes {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_ONE_OF`
+#[repr(C, packed)]
+pub struct IfrOneOf {
+    pub Header: OpHeader,
+    // NOTE: UEFI 2.10 incorrectly uses `EFI_IFR_QUESTION_HEADER *`.
+    pub Question: QuestionHeader,
+    pub Flags: u8,
+    pub Data: IfrData,
+}
+
+/// `EFI_IFR_ONE_OF_OPTION`
+#[repr(C, packed)]
+pub struct IfrOneOfOption {
+    pub Header: OpHeader,
+    pub Option: StringId,
+    pub Flags: u8,
+    pub Type: u8,
+    pub Value: IfrTypeValue,
+}
+
+/// `EFI_IFR_OR`
+#[repr(C, packed)]
+pub struct IfrOr {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_ORDERED_LIST`
+#[repr(C, packed)]
+pub struct IfrOrderedList {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub MaxContainers: u8,
     pub Flags: u8,
 }
 
+/// `EFI_IFR_PASSWORD`
 #[repr(C, packed)]
-pub struct Password {
+pub struct IfrPassword {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub MinSize: u16,
     pub MaxSize: u16,
 }
 
-#[repr(C)]
-pub struct QuestionRef1 {
+/// `EFI_IFR_QUESTION_REF1`
+#[repr(C, packed)]
+pub struct IfrQuestionRef1 {
     pub Header: OpHeader,
     pub QuestionId: QuestionId,
 }
 
-#[repr(C)]
-pub struct QuestionRef2 {
+/// `EFI_IFR_QUESTION_REF2`
+#[repr(C, packed)]
+pub struct IfrQuestionRef2 {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct QuestionRef3 {
+/// `EFI_IFR_QUESTION_REF3`
+#[repr(C, packed)]
+pub struct IfrQuestionRef3 {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct QuestionRef3_2 {
+/// `EFI_IFR_QUESTION_REF3_2`
+#[repr(C, packed)]
+pub struct IfrQuestionRef3_2 {
     pub Header: OpHeader,
     pub DevicePath: StringId,
 }
 
-#[repr(C)]
-pub struct QuestionRef3_3 {
+/// `EFI_IFR_QUESTION_REF3_3`
+#[repr(C, packed)]
+pub struct IfrQuestionRef3_3 {
     pub Header: OpHeader,
     pub DevicePath: StringId,
     pub Guid: guid::Guid,
 }
 
-#[repr(C)]
-pub struct Read {
+/// `EFI_IFR_READ`
+#[repr(C, packed)]
+pub struct IfrRead {
     pub Header: OpHeader,
 }
 
+/// `EFI_IFR_REF`
 #[repr(C, packed)]
-pub struct Ref {
+pub struct IfrRef {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub FormId: FormId,
 }
 
+/// `EFI_IFR_REF2`
 #[repr(C, packed)]
-pub struct Ref2 {
+pub struct IfrRef2 {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub FormId: FormId,
     pub QuestionId: QuestionId,
 }
 
+/// `EFI_IFR_REF3`
 #[repr(C, packed)]
-pub struct Ref3 {
+pub struct IfrRef3 {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub FormId: FormId,
@@ -593,8 +751,9 @@ pub struct Ref3 {
     pub FormSetId: guid::Guid,
 }
 
+/// `EFI_IFR_REF4`
 #[repr(C, packed)]
-pub struct Ref4 {
+pub struct IfrRef4 {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub FormId: FormId,
@@ -603,75 +762,88 @@ pub struct Ref4 {
     pub DevicePath: StringId,
 }
 
+/// `EFI_IFR_REF5`
 #[repr(C, packed)]
-pub struct Ref5 {
+pub struct IfrRef5 {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
 }
 
-#[repr(C)]
-pub struct Refresh {
+/// `EFI_IFR_REFRESH`
+#[repr(C, packed)]
+#[repr(C, packed)]
+pub struct IfrRefresh {
     pub Header: OpHeader,
     pub RefreshInterval: u8,
 }
 
+/// `EFI_IFR_REFRESH_ID`
 #[repr(C, packed)]
-pub struct RefreshId {
+pub struct IfrRefreshId {
     pub Header: OpHeader,
     pub RefreshEventGroupId: guid::Guid,
 }
 
-#[repr(C)]
-pub struct ResetButton {
+/// `EFI_IFR_RESET_BUTTON`
+#[repr(C, packed)]
+pub struct IfrResetButton {
     pub Header: OpHeader,
     pub Statement: StatementHeader,
     pub DefaultId: DefaultId,
 }
 
-#[repr(C)]
-pub struct Rule {
-    pub Header: OpHeader,
-    pub RuleId: u8,
-}
-
-#[repr(C)]
-pub struct RuleRef {
-    pub Header: OpHeader,
-    pub RuleId: u8,
-}
-
+/// `EFI_IFR_RULE`
 #[repr(C, packed)]
-pub struct Security {
+pub struct IfrRule {
+    pub Header: OpHeader,
+    pub RuleId: u8,
+}
+
+/// `EFI_IFR_RULE_REF`
+#[repr(C, packed)]
+pub struct IfrRuleRef {
+    pub Header: OpHeader,
+    pub RuleId: u8,
+}
+
+/// `EFI_IFR_SECURITY`
+#[repr(C, packed)]
+pub struct IfrSecurity {
     pub Header: OpHeader,
     pub Permissions: guid::Guid,
 }
 
+/// `EFI_IFR_SET`
 #[repr(C, packed)]
-pub struct Set {
+pub struct IfrSet {
     pub Header: OpHeader,
     pub VarStoreId: VarStoreId,
     pub VarStoreInfo: VarStoreInfo,
     pub VarStoreType: u8,
 }
 
-#[repr(C)]
-pub struct ShiftLeft {
+/// `EFI_IFR_SHIFT_LEFT`
+#[repr(C, packed)]
+pub struct IfrShiftLeft {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct ShiftRight {
+/// `EFI_IFR_SHIFT_RIGHT`
+#[repr(C, packed)]
+pub struct IfrShiftRight {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Span {
+/// `EFI_IFR_SPAN`
+#[repr(C, packed)]
+pub struct IfrSpan {
     pub Header: OpHeader,
     pub Flags: u8,
 }
 
+/// `EFI_IFR_STRING`
 #[repr(C, packed)]
-pub struct String {
+pub struct IfrString {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub MinSize: u8,
@@ -679,181 +851,209 @@ pub struct String {
     pub Flags: u8,
 }
 
-#[repr(C)]
-pub struct StringRef1 {
+/// `EFI_IFR_STRING_REF1`
+#[repr(C, packed)]
+pub struct IfrStringRef1 {
     pub Header: OpHeader,
     pub StringId: StringId,
 }
 
-#[repr(C)]
-pub struct StringRef2 {
+/// `EFI_IFR_STRING_REF2`
+#[repr(C, packed)]
+pub struct IfrStringRef2 {
     pub Header: OpHeader,
 }
 
+/// `EFI_IFR_SUBTITLE`
 #[repr(C, packed)]
-pub struct Subtitle {
+pub struct IfrSubtitle {
     pub Header: OpHeader,
     pub Statement: StatementHeader,
     pub Flags: u8,
 }
 
-#[repr(C)]
-pub struct Subtract {
+/// `EFI_IFR_SUBTRACT`
+#[repr(C, packed)]
+pub struct IfrSubtract {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct SuprressIf {
+/// `EFI_IFR_SUPPRESS_IF`
+#[repr(C, packed)]
+pub struct IfrSuprressIf {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct Text {
+/// `EFI_IFR_TEXT`
+#[repr(C, packed)]
+pub struct IfrText {
     pub Header: OpHeader,
     pub Statement: StatementHeader,
     pub TextTwo: StringId,
 }
 
-#[repr(C)]
-pub struct This {
+/// `EFI_IFR_THIS`
+#[repr(C, packed)]
+pub struct IfrThis {
     pub Header: OpHeader,
 }
 
+/// `EFI_IFR_TIME`
 #[repr(C, packed)]
-pub struct Time {
+pub struct IfrTime {
     pub Header: OpHeader,
     pub Question: QuestionHeader,
     pub Flags: u8,
 }
 
-#[repr(C)]
-pub struct Token {
+/// `EFI_IFR_TOKEN`
+#[repr(C, packed)]
+pub struct IfrToken {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct ToBoolean {
+/// `EFI_IFR_TO_BOOLEAN`
+#[repr(C, packed)]
+pub struct IfrToBoolean {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct ToLower {
+/// `EFI_IFR_TO_LOWER`
+#[repr(C, packed)]
+pub struct IfrToLower {
     pub Header: OpHeader,
 }
 
-#[repr(C)]
-pub struct ToString {
+/// `EFI_IFR_TO_STRING`
+#[repr(C, packed)]
+pub struct IfrToString {
     pub Header: OpHeader,
     pub Format: u8,
 }
 
-#[repr(C)]
-pub struct ToUint {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct ToUpper {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct True {
-    pub Header: OpHeader,
-}
-
+/// `EFI_IFR_TO_UINT`
 #[repr(C, packed)]
-pub struct Uint8 {
+pub struct IfrToUint {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_TO_UPPER`
+#[repr(C, packed)]
+pub struct IfrToUpper {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_TRUE`
+#[repr(C, packed)]
+pub struct IfrTrue {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_UINT8`
+#[repr(C, packed)]
+pub struct IfrUint8 {
     pub Header: OpHeader,
     pub Value: u8,
 }
 
-#[repr(C)]
-pub struct Uint16 {
+/// `EFI_IFR_UINT16`
+#[repr(C, packed)]
+pub struct IfrUint16 {
     pub Header: OpHeader,
     pub Value: u16,
 }
 
+/// `EFI_IFR_UINT32`
 #[repr(C, packed)]
-pub struct Uint32 {
+pub struct IfrUint32 {
     pub Header: OpHeader,
     pub Value: u32,
 }
 
+/// `EFI_IFR_UINT64`
 #[repr(C, packed)]
-pub struct Uint64 {
+pub struct IfrUint64 {
     pub Header: OpHeader,
     pub Value: u64,
 }
 
-#[repr(C)]
-pub struct Undefined {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct Value {
-    pub Header: OpHeader,
-}
-
-// TODO
-//#[repr(C)]
-//pub struct VarStore {
-//    pub Header: OpHeader,
-//    pub Guid: guid::Guid,
-//    pub VarStoreId: VarStoreId,
-//    pub Size: u16,
-//    //pub Name: *mut u8,
-//}
-
+/// `EFI_IFR_UNDEFINED`
 #[repr(C, packed)]
-pub struct VarStoreNameValue {
+pub struct IfrUndefined {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_VALUE`
+#[repr(C, packed)]
+pub struct IfrValue {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_VARSTORE`
+#[repr(C, packed)]
+pub struct IfrVarStore<const N: usize = 0> {
+    pub Header: OpHeader,
+    pub Guid: guid::Guid,
+    pub VarStoreId: VarStoreId,
+    pub Size: u16,
+    pub Name: [u8; N],
+}
+
+/// `EFI_IFR_VARSTORE_NAME_VALUE`
+#[repr(C, packed)]
+pub struct IfrVarStoreNameValue {
     pub Header: OpHeader,
     pub VarStoreId: VarStoreId,
     pub Guid: guid::Guid,
 }
 
-// TODO
-//#[repr(C)]
-//pub struct VarStoreEfi {
-//    pub Header: OpHeader,
-//    pub VarStoreId: VarStoreId,
-//    pub Guid: guid::Guid,
-//    pub Attributes: u32,
-//    pub Size: u16,
-//    //pub Name: *mut u8,
-//}
+/// `EFI_IFR_VARSTORE_EFI`
+#[repr(C, packed)]
+pub struct IfrVarStoreEfi<const N: usize = 0> {
+    pub Header: OpHeader,
+    pub VarStoreId: VarStoreId,
+    pub Guid: guid::Guid,
+    pub Attributes: u32,
+    pub Size: u16,
+    pub Name: [u8; N],
+}
 
-#[repr(C)]
-pub struct VarStoreDevice {
+/// `EFI_IFR_VARSTORE_DEVICE`
+#[repr(C, packed)]
+pub struct IfrVarStoreDevice {
     pub Header: OpHeader,
     pub DevicePath: StringId,
 }
 
-#[repr(C)]
-pub struct Version {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct Write {
-    pub Header: OpHeader,
-}
-
-#[repr(C)]
-pub struct Zero {
-    pub Header: OpHeader,
-}
-
+/// `EFI_IFR_VERSION`
 #[repr(C, packed)]
-pub struct WarningIf {
+pub struct IfrVersion {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_WRITE`
+#[repr(C, packed)]
+pub struct IfrWrite {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_ZERO`
+#[repr(C, packed)]
+pub struct IfrZero {
+    pub Header: OpHeader,
+}
+
+/// `EFI_IFR_WARNING_IF`
+#[repr(C, packed)]
+pub struct IfrWarningIf {
     pub Header: OpHeader,
     pub Warning: StringId,
     pub TimeOut: u8,
 }
 
+/// `EFI_IFR_MATCH2`
 #[repr(C, packed)]
-pub struct Match2 {
+pub struct IfrMatch2 {
     pub Header: OpHeader,
     pub SyntaxType: guid::Guid,
 }
