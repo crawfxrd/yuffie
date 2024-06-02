@@ -5,8 +5,7 @@
 
 use crate::prelude::*;
 
-// 12.9.2.4. EFI_EDID_DISCOVERED_PROTOCOL
-
+/// `EFI_EDID_DISCOVERED_PROTOCOL`
 #[repr(C)]
 pub struct EdidDiscovered {
     pub SizeOfEdid: u32,
@@ -17,8 +16,7 @@ impl EdidDiscovered {
     pub const GUID: Guid = guid!("1c0c34f6-d380-41fa-a049-8ad06c1a66aa");
 }
 
-// 12.9.2.5. EFI_EDID_ACTIVE_PROTOCOL
-
+/// `EFI_EDID_ACTIVE_PROTOCOL`
 #[repr(C)]
 pub struct EdidActive {
     pub SizeOfEdid: u32,
@@ -29,8 +27,7 @@ impl EdidActive {
     pub const GUID: Guid = guid!("bd8c1056-9f36-44ec-92a8-a6337f817986");
 }
 
-// 12.9.2.6. EFI_EDID_OVERRIDE_PROTOCOL
-
+/// `EFI_EDID_OVERRIDE_PROTOCOL`
 #[rustfmt::skip]
 #[repr(C)]
 pub struct EdidOverride {

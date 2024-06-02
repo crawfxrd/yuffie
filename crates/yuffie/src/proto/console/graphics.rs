@@ -6,6 +6,7 @@
 use crate::mem::PhysicalAddress;
 use crate::prelude::*;
 
+/// `EFI_PIXEL_BITMAP`
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(C)]
 pub struct PixelBitmap {
@@ -15,6 +16,7 @@ pub struct PixelBitmap {
     pub ReservedMask: u32,
 }
 
+/// `EFI_GRAPHICS_PIXEL_FORMAT`
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct PixelFormat(u32);
@@ -26,6 +28,7 @@ impl PixelFormat {
     pub const BLT_ONLY: Self = Self(3);
 }
 
+/// `EFI_GRAPHICS_OUTPUT_MODE_INFORMATION`
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(C)]
 pub struct GraphicsOutputModeInfo {
@@ -37,6 +40,7 @@ pub struct GraphicsOutputModeInfo {
     pub PixelsPerScanLine: u32,
 }
 
+/// `EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE`
 #[derive(Debug, Eq, PartialEq)]
 #[repr(C)]
 pub struct GraphicsOutputMode {
@@ -48,6 +52,7 @@ pub struct GraphicsOutputMode {
     pub FrameBufferSize: usize,
 }
 
+/// `EFI_GRAPHICS_OUTPUT_BLT_PIXEL`
 #[derive(Debug, Eq, PartialEq)]
 #[repr(C)]
 pub struct GraphicsOutputBltPixel {
@@ -57,6 +62,7 @@ pub struct GraphicsOutputBltPixel {
     pub Reserved: u8,
 }
 
+/// `EFI_GRAPHICS_OUTPUT_BLT_OPERATION`
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct GraphicsOutputBltOperation(u32);
@@ -68,6 +74,7 @@ impl GraphicsOutputBltOperation {
     pub const VIDEO_TO_VIDEO: Self = Self(3);
 }
 
+/// `EFI_GRAPHICS_OUTPUT_PROTOCOL`
 #[rustfmt::skip]
 #[repr(C)]
 pub struct GraphicsOutput {
@@ -79,4 +86,19 @@ pub struct GraphicsOutput {
 
 impl GraphicsOutput {
     pub const GUID: Guid = guid!("9042a9de-23dc-4a38-96fb-7aded080516a");
+
+    // TODO: QueryMode
+
+    /// Set the video device into the specified mode and clears the visible
+    /// portions of the output display to black.
+    ///
+    /// ## Errors
+    ///
+    /// - `DEVICE_ERROR`: Hardware error.
+    /// - `UNSUPPORTED`: The index is not supported by the device.
+    pub fn set_mode(&mut self, index: u32) -> Result<()> {
+        (self.SetMode)(self, index).into()
+    }
+
+    // TODO: Blt
 }
