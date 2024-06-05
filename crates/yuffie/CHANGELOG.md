@@ -2,6 +2,10 @@
 
 ## unreleased
 
+- Added wrappers for many console protocol functions
+- Added HII code definitions
+- Added driver model protocols
+
 ## 0.0.1 (2024-06-01)
 
 - Added multiple UEFI data types and interfaces.
