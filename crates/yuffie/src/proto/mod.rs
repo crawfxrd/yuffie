@@ -4,3 +4,4 @@
 //! Protocols
 
 pub mod console;
+pub mod driver;
