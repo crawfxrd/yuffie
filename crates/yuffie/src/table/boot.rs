@@ -113,10 +113,10 @@ pub struct BootServices {
     pub ProtocolsPerHandle: extern "efiapi" fn(Handle, *mut *mut *mut Guid, *mut usize) -> Status,
     pub LocateHandleBuffer: extern "efiapi" fn(LocateSearchType, *const Guid, *const u8, *mut usize, *mut *mut Handle) -> Status,
     pub LocateProtocol: extern "efiapi" fn(*const Guid, *const u8, *mut *mut u8) -> Status,
-    // XXX: Variadic arguments
-    pub InstallMultipleProtocolInterfaces: extern "efiapi" fn(*mut Handle) -> Status,
-    // XXX: Variadic arguments
-    pub UninstallMultipleProtocolInterfaces: extern "efiapi" fn(Handle) -> Status,
+    // XXX: Variadic arguments: https://github.com/rust-lang/rust/issues/100189
+    InstallMultipleProtocolInterfaces: extern "efiapi" fn(*mut Handle) -> Status,
+    // XXX: Variadic arguments: https://github.com/rust-lang/rust/issues/100189
+    UninstallMultipleProtocolInterfaces: extern "efiapi" fn(Handle) -> Status,
 
     // 32-bit CRC Services
     pub CalculateCrc32: extern "efiapi" fn(*const u8, usize, *mut u32) -> Status,
