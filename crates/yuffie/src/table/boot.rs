@@ -210,7 +210,7 @@ impl BootServices {
     /// - `INVALID_PARAMETER`: `event_type` has both `NOTIFY_SIGNAL` and
     ///   `NOTIFY_WAIT` set.
     /// - `INVALID_PARAMETER`: `event_type` has either `NOTIFY_SIGNAL` or
-    ///   `NOTIFY_WAIT` set and `notify` is `None.
+    ///   `NOTIFY_WAIT` set and `notify` is `None`.
     /// - `INVALID_PARAMETER`: `event_type` has either `NOTIFY_SIGNAL` or
     ///   `NOTIFY_WAIT` set and `tpl` is not a supported level.
     pub fn create_event(

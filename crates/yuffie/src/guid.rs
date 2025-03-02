@@ -40,7 +40,7 @@ pub struct Guid(u32, u16, u16, [u8; 8]);
 impl Guid {
     /// A GUID that has all bits set to 0.
     pub const NIL: Self = guid!("00000000-0000-0000-0000-000000000000");
-    /// An alias for [Guid::NIL].
+    /// An alias for [`Guid::NIL`].
     pub const NULL: Self = Self::NIL;
     /// A GUID that has all bits set to 1.
     pub const MAX: Self = guid!("ffffffff-ffff-ffff-ffff-ffffffffffff");

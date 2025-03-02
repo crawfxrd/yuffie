@@ -19,7 +19,7 @@ static mut BOOT_SERVICES: Option<NonNull<BootServices>> = None;
 /// Save a reference to the Boot Services table.
 pub(crate) fn init(bs: &mut BootServices) {
     unsafe {
-        BOOT_SERVICES = NonNull::new(bs as *mut _);
+        BOOT_SERVICES = NonNull::new(core::ptr::from_mut(bs));
     }
 }
 

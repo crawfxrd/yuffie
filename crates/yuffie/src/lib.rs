@@ -14,28 +14,6 @@
 //! [UEFI PI]: https://uefi.org/sites/default/files/resources/UEFI_PI_Spec_1_8_March3.pdf
 
 #![no_std]
-#![allow(non_snake_case)]
-#![deny(unused_crate_dependencies)]
-#![deny(unused_imports)]
-#![deny(clippy::enum_glob_use)]
-#![deny(clippy::inline_asm_x86_att_syntax)]
-#![deny(clippy::panic)]
-#![deny(clippy::ref_binding_to_reference)]
-//#![deny(clippy::undocumented_unsafe_blocks)]
-#![deny(clippy::unwrap_used)]
-#![deny(clippy::wildcard_dependencies)]
-#![warn(clippy::borrow_as_ptr)]
-#![warn(clippy::cast_lossless)]
-#![warn(clippy::default_union_representation)]
-#![warn(clippy::float_arithmetic)]
-#![warn(clippy::macro_use_imports)]
-#![warn(clippy::match_same_arms)]
-//#![warn(clippy::missing_errors_doc)]
-#![warn(clippy::ptr_as_ptr)]
-#![warn(clippy::same_name_method)]
-#![warn(clippy::self_named_module_files)]
-#![warn(clippy::semicolon_if_nothing_returned)]
-#![warn(clippy::shadow_unrelated)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -81,7 +59,7 @@ pub fn init(st: &mut SystemTable) {
 #[cfg(feature = "alloc")]
 pub fn init(st: &mut SystemTable) {
     unsafe {
-        SYSTEM_TABLE = ptr::NonNull::new(st as *mut _);
+        SYSTEM_TABLE = ptr::NonNull::new(ptr::from_mut(st));
         global_alloc::init(st.boot_services());
     }
 }

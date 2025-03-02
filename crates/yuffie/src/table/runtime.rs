@@ -316,7 +316,7 @@ impl RuntimeServices {
     }
 
     /// Resets the entire platform. If the platform supports
-    /// RESET_NOTIFICATION_PROTOCOL, then prior to completing the reset of
+    /// `RESET_NOTIFICATION_PROTOCOL`, then prior to completing the reset of
     /// the platform, all of the pending notifications must be called.
     pub fn reset_system(&self, kind: ResetType, status: Status, reset_data: Option<&[u8]>) {
         let (size, data) = match reset_data {
