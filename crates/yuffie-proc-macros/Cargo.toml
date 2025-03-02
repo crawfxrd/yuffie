@@ -1,11 +1,12 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
 [package]
 name = "yuffie-proc-macros"
 version = "0.0.1"
 description = "Procedural macros for Yuffie"
 
-categories.workspace = true
 edition.workspace = true
-keywords.workspace = true
 license.workspace = true
 publish.workspace = true
 repository.workspace = true

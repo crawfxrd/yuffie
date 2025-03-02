@@ -1,11 +1,14 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
 [package]
 name = "yuffie"
 version = "0.0.1"
 description = "A library for creating UEFI applications, libraries, and drivers"
+keywords = ["firmware", "uefi"]
+categories = ["embedded", "no-std"]
 
-categories.workspace = true
 edition.workspace = true
-keywords.workspace = true
 license.workspace = true
 publish.workspace = true
 repository.workspace = true

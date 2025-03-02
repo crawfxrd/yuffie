@@ -771,7 +771,6 @@ pub struct IfrRef5 {
 
 /// `EFI_IFR_REFRESH`
 #[repr(C, packed)]
-#[repr(C, packed)]
 pub struct IfrRefresh {
     pub Header: OpHeader,
     pub RefreshInterval: u8,

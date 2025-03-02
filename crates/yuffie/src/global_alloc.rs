@@ -25,7 +25,7 @@ pub(crate) fn init(bs: &mut BootServices) {
 
 /// A convenience function to access the boot services table.
 unsafe fn boot_services() -> NonNull<BootServices> {
-    BOOT_SERVICES.expect("boot services not available")
+    unsafe { BOOT_SERVICES.expect("boot services not available") }
 }
 
 pub struct Allocator;
@@ -33,13 +33,17 @@ pub struct Allocator;
 unsafe impl core::alloc::GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: core::alloc::Layout) -> *mut u8 {
         // TODO: Allow other memory types
-        boot_services()
-            .as_ref()
-            .allocate_pool(MemoryType::LOADER_DATA, layout.size())
-            .expect("failed to allocate memory")
+        unsafe {
+            boot_services()
+                .as_ref()
+                .allocate_pool(MemoryType::LOADER_DATA, layout.size())
+                .expect("failed to allocate memory")
+        }
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, _layout: core::alloc::Layout) {
-        boot_services().as_ref().free_pool(ptr).expect("failed to free memory");
+        unsafe {
+            boot_services().as_ref().free_pool(ptr).expect("failed to free memory");
+        }
     }
 }

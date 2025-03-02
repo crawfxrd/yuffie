@@ -14,13 +14,13 @@
 //! [UEFI Spec]: https://uefi.org/sites/default/files/resources/UEFI_Spec_2_10_Aug29.pdf
 
 use super::Header;
+use crate::Event;
+use crate::Tpl;
 use crate::mem::AllocateType;
 use crate::mem::MemoryDescriptor;
 use crate::mem::MemoryType;
 use crate::mem::PhysicalAddress;
 use crate::prelude::*;
-use crate::Event;
-use crate::Tpl;
 
 pub type EventNotifyFn = extern "efiapi" fn(Event, *const u8);
 

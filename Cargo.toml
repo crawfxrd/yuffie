@@ -1,16 +1,18 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
 [workspace]
 resolver = "2"
 members = [
-    "crates/*"
+    "crates/yuffie",
+    "crates/yuffie-proc-macros",
 ]
 
 [workspace.package]
-edition = "2021"
-rust-version = "1.78.0"
+edition = "2024"
+rust-version = "1.85.0"
 license = "BSD-2-Clause-Patent"
 repository = "https://github.com/crawfxrd/yuffie"
-keywords = ["firmware", "uefi"]
-categories = ["embedded", "no-std"]
 publish = true
 
 [profile.dev.package."*"]

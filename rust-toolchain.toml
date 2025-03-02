@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: NONE
 
 [toolchain]
-channel = "1.78.0"
+channel = "1.85.0"
 components = ["clippy"]
 targets = ["x86_64-unknown-uefi"]
 profile = "minimal"

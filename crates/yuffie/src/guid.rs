@@ -78,7 +78,7 @@ impl Guid {
             let hi = hex_to_u8(bytes[i]);
             let lo = hex_to_u8(bytes[i + 1]);
 
-            let b = hi << 4 | lo;
+            let b = (hi << 4) | lo;
             raw[j] = b;
 
             i += 2;

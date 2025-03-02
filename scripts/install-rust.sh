@@ -10,9 +10,9 @@
 set -Ee
 
 # Must match the toolchain in `rust-toolchain.toml`.
-RUST_TOOLCHAIN="1.78.0"
+RUST_TOOLCHAIN="1.85.0"
 # Must match version in `justfile`.
-RUST_TOOLCHAIN_NIGHTLY="nightly-2024-05-11"
+RUST_TOOLCHAIN_NIGHTLY="nightly-2025-02-10"
 
 if ! command -v rustup >/dev/null 2>&1; then
     if command -v rustup-init >/dev/null 2>&1; then

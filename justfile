@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 # SPDX-FileCopyrightText: 2024 System76, Inc.
 
-nightly := "nightly-2024-05-11"
+nightly := "nightly-2025-02-10"
 
 # List available recipes
 @help:
