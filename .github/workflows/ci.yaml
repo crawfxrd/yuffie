@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: NONE
+
+name: CI
+
+on:
+  push:
+    branches-ignore:
+    - 'wip/*'
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup show active-toolchain || rustup toolchain install
+    - run: rustup toolchain install nightly --profile minimal --component rustfmt
+    - run: cargo fetch --locked
+    - run: cargo +nightly fmt --check
+    - run: cargo clippy --all-features -- -D warnings
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup show active-toolchain || rustup toolchain install
+    - run: cargo build --release --target x86_64-unknown-uefi
+    - run: cargo doc --workspace --document-private-items --no-deps --release
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup show active-toolchain || rustup toolchain install
+    - run: cargo fetch --locked
+    - run: cargo test --no-default-features

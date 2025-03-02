@@ -1,8 +1,8 @@
 # Summary
 
-- [Index](./index.md)
-- [Contributing](./contributing.md)
+[Index](./index.md)
 
 ---
 
-- [License](./license.md)
+[Contributing](./contributing.md)
+[License](./license.md)

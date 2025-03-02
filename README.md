@@ -1,7 +1,6 @@
 # Yuffie
 
-Yuffie is a library for creating UEFI applications, libraries, and drivers in
-Rust.
+Yuffie is a library for creating UEFI modules in Rust.
 
 ## Resources
 

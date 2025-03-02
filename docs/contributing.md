@@ -29,7 +29,7 @@ terms of the [BSD-2-Clause Plus Patent][BSD-2-Clause-Patent] license.
 SPDX-License-Identifier: BSD-2-Clause-Patent
 ```
 
-- Use `just fmt` to format the code
+- Use `cargo +nightly fmt` to format the code
 - Use all lowercase for file names
 - Do not use spaces in file names
 - Prefer underscores (`_`) over dashes (`-`) in file names
